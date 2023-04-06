@@ -42,7 +42,7 @@ from flask import render_template  # import render_template from "public" flask 
 from flask import Flask, request, jsonify
 import sqlite3
 
-@app.route('/api/players')
+@app.route('/api/logins')
 def phone():
     conn = sqlite3.connect('api/sqlite.db')
     c = conn.cursor()
