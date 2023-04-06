@@ -35,3 +35,42 @@ def register_user():
 
 if __name__ == '__main__':
     app.run()
+
+import threading
+# import "packages" from flask
+from flask import render_template  # import render_template from "public" flask libraries
+from flask import Flask, request, jsonify
+import sqlite3
+
+@app.route('/api/players')
+def phone():
+    conn = sqlite3.connect('api/sqlite.db')
+    c = conn.cursor()
+    c.execute('CREATE TABLE IF NOT EXISTS logins (username TEXT, email TEXT, password TEXT)')
+    c.execute("SELECT * FROM logins")
+    rows = c.fetchall()
+    conn.close()
+
+    data = []
+    for row in rows:
+        data.append({
+            "username": row[0],
+            "email": row[1],
+            "text": row[2],
+        })
+
+    return jsonify(data)
+
+@app.route('/submit', methods=['POST'])
+def submit():
+    user_id = request.form['user_id']
+    number = request.form['email']
+
+    # Save the data to the database
+    conn = sqlite3.connect('api/sqlite.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO logins (username, email, password) VALUES (?, ?, ?)", (username, email, password))
+    conn.commit()
+    conn.close()
+
+    return "Data has been submitted successfully."
