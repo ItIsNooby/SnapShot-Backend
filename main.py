@@ -89,7 +89,7 @@ def signup():
 
 @app.before_first_request
 def activate_job():  # activate these items 
-    db.init_app(app)
+    # db.init_app(app)
     initJokes()
     initUsers()
     initPlayers()
