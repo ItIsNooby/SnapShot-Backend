@@ -1,6 +1,6 @@
 import threading
 from flask import Flask, request, jsonify
-import jwt
+import sqlite3
 
 # import "packages" from flask
 from flask import render_template  # import render_template from "public" flask libraries
@@ -42,41 +42,50 @@ def index():
 def stub():
     return render_template("stub.html")
 
-# Secret key for JWT
-app.secret_key = 'your_secret_key'
+app = Flask(__name__)
 
-# User data for demonstration (replace with your actual user data storage)
-users = {
-    'leejeffreysc@gmail.com': {
-        'name': 'Jeffrey',
-        'password': 'Jeff1227'
-    },
-    'dog@gmail.com': {
-        'name': 'Yessir',
-        'password': 'Password'
-    }
-}
+# Create SQLite database and table
+conn = sqlite3.connect('api/sqlite.db')
+c = conn.cursor()
+c.execute('''CREATE TABLE IF NOT EXISTS logins
+             (id INTEGER PRIMARY KEY AUTOINCREMENT,
+              name TEXT NOT NULL,
+              email TEXT NOT NULL,
+              password TEXT NOT NULL);''')
+conn.commit()
+conn.close()
 
-# Login endpoint
+# Route for login
 @app.route('/login', methods=['POST'])
 def login():
     email = request.json['email']
     password = request.json['password']
-    if email in users and users[email]['password'] == password:
-        # Generate JWT token with user email as payload
-        token = jwt.encode({'email': email}, app.secret_key, algorithm='HS256')
-        return jsonify({'token': token.decode('utf-8')})
+    # Connect to SQLite database and check if user exists
+    conn = sqlite3.connect('api/sqlite.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM logins WHERE email = ? AND password = ?", (email, password))
+    user = c.fetchone()
+    conn.close()
+    if user:
+        # Return a JWT token or any other authentication token
+        return jsonify({'token': 'YOUR_TOKEN_HERE'})
     else:
-        return jsonify({'message': 'Invalid email or password'}), 401
+        return jsonify({'message': 'Invalid email or password'})
 
-# Signup endpoint
+# Route for signup
 @app.route('/signup', methods=['POST'])
 def signup():
-    email = request.json['email']
     name = request.json['name']
+    email = request.json['email']
     password = request.json['password']
-    if email in users:
-        return
+    # Connect to SQLite database and insert user data
+    conn = sqlite3.connect('api/sqlite.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO logins (name, email, password) VALUES (?, ?, ?)", (name, email, password))
+    conn.commit()
+    conn.close()
+    # Return a JWT token or any other authentication token
+    return jsonify({'token': 'YOUR_TOKEN_HERE'})
 
 @app.before_first_request
 def activate_job():  # activate these items 
