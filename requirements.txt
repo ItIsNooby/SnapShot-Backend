@@ -6,6 +6,7 @@ flask_login
 flask_sqlalchemy
 flask_migrate
 flask_restful
+jwt
 alembic==1.9.4
 aniso8601==9.0.1
 certifi==2022.12.7
