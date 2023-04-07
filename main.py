@@ -1,4 +1,6 @@
 import threading
+from flask import Flask, request, jsonify
+import jwt
 
 # import "packages" from flask
 from flask import render_template  # import render_template from "public" flask libraries
@@ -40,7 +42,41 @@ def index():
 def stub():
     return render_template("stub.html")
 
+# Secret key for JWT
+app.secret_key = 'your_secret_key'
 
+# User data for demonstration (replace with your actual user data storage)
+users = {
+    'leejeffreysc@gmail.com': {
+        'name': 'Jeffrey',
+        'password': 'Jeff1227'
+    },
+    'dog@gmail.com': {
+        'name': 'Yessir',
+        'password': 'Password'
+    }
+}
+
+# Login endpoint
+@app.route('/login', methods=['POST'])
+def login():
+    email = request.json['email']
+    password = request.json['password']
+    if email in users and users[email]['password'] == password:
+        # Generate JWT token with user email as payload
+        token = jwt.encode({'email': email}, app.secret_key, algorithm='HS256')
+        return jsonify({'token': token.decode('utf-8')})
+    else:
+        return jsonify({'message': 'Invalid email or password'}), 401
+
+# Signup endpoint
+@app.route('/signup', methods=['POST'])
+def signup():
+    email = request.json['email']
+    name = request.json['name']
+    password = request.json['password']
+    if email in users:
+        return
 
 @app.before_first_request
 def activate_job():  # activate these items 
