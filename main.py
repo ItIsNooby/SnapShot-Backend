@@ -96,7 +96,7 @@ def login():
 # Route to retrieve user details
 @app.route('/user/<int:user_id>', methods=['GET'])
 def get_user(user_id):
-    user = User.query.get(user_id)
+    user = User.query.get(user_id) 
     if user is None:
         return jsonify({'error': 'User not found'}), 404
 
