@@ -1,6 +1,7 @@
 import threading
 from flask import Flask, request, jsonify
 import sqlite3
+from flask_sqlalchemy import SQLAlchemy
 
 # import "packages" from flask
 from flask import render_template  # import render_template from "public" flask libraries
@@ -43,49 +44,63 @@ def stub():
     return render_template("stub.html")
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'  # SQLite database URI
+db = SQLAlchemy(app)
 
-# Create SQLite database and table
-conn = sqlite3.connect('api/sqlite.db')
-c = conn.cursor()
-c.execute('''CREATE TABLE IF NOT EXISTS logins
-             (id INTEGER PRIMARY KEY AUTOINCREMENT,
-              name TEXT NOT NULL,
-              email TEXT NOT NULL,
-              password TEXT NOT NULL);''')
-conn.commit()
-conn.close()
+# User model
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    # Add other fields as needed
 
-# Route for login
+# Create database tables
+db.create_all()
+
+# Route to register a new user
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    email = data.get('email')
+
+    # Check if user already exists
+    if User.query.filter_by(username=username).first() is not None:
+        return jsonify({'error': 'Username already exists'}), 400
+
+    # Create a new user
+    new_user = User(username=username, password=password, email=email)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({'message': 'User registered successfully'}), 200
+
+# Route to login a user
 @app.route('/login', methods=['POST'])
 def login():
-    email = request.json['email']
-    password = request.json['password']
-    # Connect to SQLite database and check if user exists
-    conn = sqlite3.connect('api/sqlite.db')
-    c = conn.cursor()
-    c.execute("SELECT * FROM logins WHERE email = ? AND password = ?", (email, password))
-    user = c.fetchone()
-    conn.close()
-    if user:
-        # Return a JWT token or any other authentication token
-        return jsonify({'token': 'YOUR_TOKEN_HERE'})
-    else:
-        return jsonify({'message': 'Invalid email or password'})
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
 
-# Route for signup
-@app.route('/signup', methods=['POST'])
-def signup():
-    name = request.json['name']
-    email = request.json['email']
-    password = request.json['password']
-    # Connect to SQLite database and insert user data
-    conn = sqlite3.connect('api/sqlite.db')
-    c = conn.cursor()
-    c.execute("INSERT INTO logins (name, email, password) VALUES (?, ?, ?)", (name, email, password))
-    conn.commit()
-    conn.close()
-    # Return a JWT token or any other authentication token
-    return jsonify({'token': 'YOUR_TOKEN_HERE'})
+    # Query user from database
+    user = User.query.filter_by(username=username).first()
+
+    # Check if user exists and password is correct
+    if user is None or user.password != password:
+        return jsonify({'error': 'Invalid username or password'}), 401
+
+    return jsonify({'message': 'Login successful', 'user_id': user.id}), 200
+
+# Route to retrieve user details
+@app.route('/user/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    user = User.query.get(user_id)
+    if user is None:
+        return jsonify({'error': 'User not found'}), 404
+
+    return jsonify({'username': user.username, 'email': user.email}), 200
 
 @app.before_first_request
 def activate_job():  # activate these items 
