@@ -105,9 +105,9 @@ def get_user(user_id):
 @app.before_first_request
 def activate_job():  # activate these items 
     # db.init_app(app)
-    initJokes()
+    # initJokes()
     # initUsers()
-    initPlayers()
+    # initPlayers()
 
 # this runs the application on the development server
 if __name__ == "__main__":
