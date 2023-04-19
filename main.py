@@ -106,7 +106,7 @@ def get_user(user_id):
 def activate_job():  # activate these items 
     # db.init_app(app)
     initJokes()
-    initUsers()
+    # initUsers()
     initPlayers()
 
 # this runs the application on the development server
