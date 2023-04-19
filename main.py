@@ -8,10 +8,6 @@ from flask import render_template  # import render_template from "public" flask 
 
 # import "packages" from "this" project
 from __init__ import app,db  # Definitions initialization
-from model.jokes import initJokes
-from model.users import initUsers
-from model.players import initPlayers
-
 
 # setup APIs
 from api.covid import covid_api # Blueprint import api definition
@@ -43,10 +39,6 @@ def index():
 def stub():
     return render_template("stub.html")
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'  # SQLite database URI
-db = SQLAlchemy(app)
-
 # User model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -59,7 +51,7 @@ class User(db.Model):
 # db.create_all()
  
 # Route to register a new user
-@app.route('/register', methods=['POST'])
+@app.route('/register/', methods=['POST'])
 def register():
     data = request.json
     username = data.get('username')
@@ -78,7 +70,7 @@ def register():
     return jsonify({'message': 'User registered successfully'}), 200
 
 # Route to login a user
-@app.route('/login', methods=['POST'])
+@app.route('/login/', methods=['POST'])
 def login():
     data = request.json
     username = data.get('username')
@@ -94,7 +86,7 @@ def login():
     return jsonify({'message': 'Login successful', 'user_id': user.id}), 200
 
 # Route to retrieve user details
-@app.route('/user/<int:user_id>', methods=['GET'])
+@app.route('/user/<int:user_id>/', methods=['GET'])
 def get_user(user_id):
     user = User.query.get(user_id) 
     if user is None:
@@ -111,7 +103,8 @@ def get_user(user_id):
 
 # this runs the application on the development server
 if __name__ == "__main__":
+    db.init_app(app)
     # change name for testing
     from flask_cors import CORS
-    cors = CORS(app)
-    app.run(debug=True, host="0.0.0.0", port="8086")
+    cors = CORS(app, support_credentials=True)
+    app.run(debug=True, host="0.0.0.0", port="8086") 
