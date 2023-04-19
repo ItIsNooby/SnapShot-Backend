@@ -56,8 +56,8 @@ class User(db.Model):
     # Add other fields as needed
 
 # Create database tables
-db.create_all()
-
+# db.create_all()
+ 
 # Route to register a new user
 @app.route('/register', methods=['POST'])
 def register():
