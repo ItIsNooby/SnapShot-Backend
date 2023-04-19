@@ -102,8 +102,8 @@ def get_user(user_id):
 
     return jsonify({'username': user.username, 'email': user.email}), 200
 
-@app.before_first_request
-def activate_job():  # activate these items 
+# @app.before_first_request
+# def activate_job():  # activate these items 
     # db.init_app(app)
     # initJokes()
     # initUsers()
