@@ -35,7 +35,7 @@ def page_not_found(e):
 def index():
     return render_template("index.html")
 
-@app.route('/stub/')  # connects /stub/ URL to stub() function
+@app.route('/stub')  # connects /stub/ URL to stub() function
 def stub():
     return render_template("stub.html")
 
@@ -51,7 +51,7 @@ class User(db.Model):
 # db.create_all()
  
 # Route to register a new user
-@app.route('/register/', methods=['POST'])
+@app.route('/register', methods=['POST'])
 def register():
     data = request.json
     username = data.get('username')
@@ -70,7 +70,7 @@ def register():
     return jsonify({'message': 'User registered successfully'}), 200
 
 # Route to login a user
-@app.route('/login/', methods=['POST'])
+@app.route('/login', methods=['POST'])
 def login():
     data = request.json
     username = data.get('username')
@@ -86,7 +86,7 @@ def login():
     return jsonify({'message': 'Login successful', 'user_id': user.id}), 200
 
 # Route to retrieve user details
-@app.route('/user/<int:user_id>/', methods=['GET'])
+@app.route('/user/<int:user_id>', methods=['GET'])
 def get_user(user_id):
     user = User.query.get(user_id) 
     if user is None:
