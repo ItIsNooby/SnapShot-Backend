@@ -1,6 +1,8 @@
 flask
 requests
 SQLAlchemy
+flask_socketio
+SocketIO
 Werkzeug
 flask_login
 flask_sqlalchemy
