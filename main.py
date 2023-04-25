@@ -1,45 +1,15 @@
 import threading
-from flask import Flask, request, jsonify, session
-import sqlite3
+from flask import Flask, request, jsonify, session, render_template
 from flask_sqlalchemy import SQLAlchemy
-
+import socketio
 from flask_socketio import SocketIO, emit, join_room, leave_room
 
-# import "packages" from flask
-from flask import render_template  # import render_template from "public" flask libraries
-
-# import "packages" from "this" project
-from __init__ import app,db  # Definitions initialization
-
-# setup APIs
-from api.covid import covid_api # Blueprint import api definition
-from api.joke import joke_api # Blueprint import api definition
-from api.user import user_api # Blueprint import api definition
-from api.player import player_api
-
-
-# setup App pages
-from projects.projects import app_projects # Blueprint directory import projects definition
-
-# register URIs
-app.register_blueprint(joke_api) # register api routes
-app.register_blueprint(covid_api) # register api routes
-app.register_blueprint(user_api) # register api routes
-app.register_blueprint(player_api)
-app.register_blueprint(app_projects) # register app pages
-
-@app.errorhandler(404)  # catch for URL not found
-def page_not_found(e):
-    # note that we set the 404 status explicitly
-    return render_template('404.html'), 404
-
-@app.route('/')  # connects default URL to index() function
-def index():
-    return render_template("index.html")
-
-@app.route('/stub')  # connects /stub/ URL to stub() function
-def stub():
-    return render_template("stub.html")
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = 'your_secret_key'
+db = SQLAlchemy(app)
+socketio = SocketIO(app)
 
 # User model
 class User(db.Model):
@@ -48,7 +18,7 @@ class User(db.Model):
     password = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     # Add other fields as needed
- 
+
 # Route to register a new user
 @app.route('/register', methods=['POST'])
 def register():
@@ -113,10 +83,11 @@ def handle_message(data):
 
 # this runs the application on the development server
 if __name__ == "__main__":
-    db.init_app(app)
+    # db.init_app(app)
     # change name for testing
     from flask_cors import CORS
     cors = CORS(app, support_credentials=True)
+    socketio.run(app, debug=True)
     app.run(debug=True, host="0.0.0.0", port="8086") 
 
 app = Flask(__name__)
@@ -128,3 +99,5 @@ socketio = SocketIO(app)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
+
+
